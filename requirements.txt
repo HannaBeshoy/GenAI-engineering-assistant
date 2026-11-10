@@ -1,0 +1,12 @@
+# Same versions as the course's requirements.txt (Python 3.10), plus pypdf for reading PDFs
+langchain-core==1.2.20
+langchain-openai==1.1.11
+langchain-groq==1.1.2
+langchain-ollama==1.0.1
+openai==2.29.0
+python-dotenv==1.2.2
+streamlit==1.55.0
+pydantic==2.12.5
+numpy==2.2.6
+scikit-learn==1.7.2
+pypdf==7.0.1

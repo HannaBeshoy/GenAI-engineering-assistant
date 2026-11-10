@@ -1,0 +1,59 @@
+note_id,date,shift,station,product,serial_no,note
+1005,2026-11-02,N,ST3,BRG-6204,BRG-6204-261102-007,NOISE NOK - grinding sound when rotating by hand too pls check
+1010,2026-11-02,N,ST3,BRG-6204,BRG-6204-261102-014,NOISE NOK - grinding sound when rotating by hand too
+1015,2026-11-02,M,ST1,BRG-6204,BRG-6204-261102-048,"high frequency noise peak at BPFO, retest fail, 2nd time this shift"
+1020,2026-11-02,A,ST1,BRG-6204,BRG-6204-261102-001,"width 14.06 out of spec, tray from grinder 3"
+1025,2026-11-02,M,ST1,BRG-6204,BRG-6204-261102-060,"OD under tolerance, 46.987 measured pls check"
+1030,2026-11-02,A,ST4,ACT-E40,ACT-E40-261102-028,"fixture B clamp worn, parts tilt, false fail?"
+1035,2026-11-02,N,ST3,BRG-6204,BRG-6204-261102-051,"grease amount low, dry spots on balls"
+1040,2026-11-02,M,ST2,BRG-6204,BRG-6204-261102-027,"seal lip cut, visible on one side"
+1045,2026-11-02,M,ST1,CRU-200,CRU-200-261102-057,actuator holding torque low (checked by shift lead)
+1050,2026-11-02,M,ST5,ACT-E40,ACT-E40-261102-028,motor current 2.1 A over limit at stall
+1055,2026-11-02,A,ST5,BRG-6204,BRG-6204-261102-056,serial number not readable - retest also fail
+1003,2026-11-03,N,ST3,BRG-6204,BRG-6204-261103-029,"noisy, clicking 1x per rev"
+1008,2026-11-03,N,ST3,BRG-6204,BRG-6204-261103-003,"noisy, clicking 1x per rev"
+1013,2026-11-03,A,ST1,BRG-6204,BRG-6204-261103-026,"noisy, clicking 1x per rev - retest also fail"
+1018,2026-11-03,A,ST1,BRG-6204,BRG-6204-261103-034,"OD under tolerance, 46.987 measured"
+1023,2026-11-03,A,ST1,BRG-6204,BRG-6204-261103-016,"width 14.06 out of spec, tray from grinder 3"
+1028,2026-11-03,A,ST4,ACT-E40,ACT-E40-261103-005,"torque high on fixture B, same part OK on fixture A"
+1033,2026-11-03,N,ST3,BRG-6204,BRG-6204-261103-006,"grease amount low, dry spots on balls - retest also fail"
+1038,2026-11-03,M,ST2,BRG-6204,BRG-6204-261103-004,"seal not seated, pressed in crooked"
+1043,2026-11-03,A,ST4,ACT-E40,ACT-E40-261103-009,"running torque high, stiff rotation, 2nd time this shift"
+1048,2026-11-03,M,ST2,CRU-200,CRU-200-261103-041,metal chip inside bearing (checked by shift lead)
+1053,2026-11-03,M,ST5,ACT-E40,ACT-E40-261103-057,motor current 2.1 A over limit at stall
+1058,2026-11-03,M,ST2,CRU-200,CRU-200-261103-008,rubber seal torn after press-fit
+1001,2026-11-04,N,ST3,BRG-6204,BRG-6204-261104-044,"noise test fail, rumble at high speed - retest also fail"
+1006,2026-11-04,N,ST3,BRG-6204,BRG-6204-261104-035,NOISE NOK - grinding sound when rotating by hand too
+1011,2026-11-04,N,ST3,BRG-6204,BRG-6204-261104-011,NOISE NOK - grinding sound when rotating by hand too
+1016,2026-11-04,A,ST2,BRG-6204,BRG-6204-261104-024,"noisy, clicking 1x per rev"
+1021,2026-11-04,A,ST1,BRG-6204,BRG-6204-261104-054,"width 14.06 out of spec, tray from grinder 3"
+1026,2026-11-04,A,ST4,ACT-E40,ACT-E40-261104-008,"tester error E17 - probe not contacting, retest PASS"
+1031,2026-11-04,M,ST4,ACT-E40,ACT-E40-261104-016,"fixture B clamp worn, parts tilt, false fail? (checked by shift lead)"
+1036,2026-11-04,N,ST3,BRG-6204,BRG-6204-261104-032,no grease in one side!
+1041,2026-11-04,M,ST4,ACT-E40,ACT-E40-261104-017,actuator holding torque low (checked by shift lead)
+1046,2026-11-04,M,ST1,CRU-200,CRU-200-261104-046,starting torque too high 59 mNm (checked by shift lead)
+1051,2026-11-04,M,ST5,ACT-E40,ACT-E40-261104-044,"actuator motor no response, connector pin bent"
+1056,2026-11-04,M,ST5,BRG-6204,BRG-6204-261104-015,wrong label - 6205 label on 6204 part
+1004,2026-11-05,N,ST3,BRG-6204,BRG-6204-261105-022,"noisy, clicking 1x per rev"
+1009,2026-11-05,N,ST3,BRG-6204,BRG-6204-261105-025,vibration velocity 4.2 mm/s over limit 2.8
+1014,2026-11-05,A,ST2,BRG-6204,BRG-6204-261105-014,NOISE NOK - grinding sound when rotating by hand too
+1019,2026-11-05,M,ST1,BRG-6204,BRG-6204-261105-044,"width 14.06 out of spec, tray from grinder 3"
+1024,2026-11-05,M,ST1,BRG-6204,BRG-6204-261105-049,bore dia 20.012 over tol (max 20.008) pls check
+1029,2026-11-05,M,ST4,ACT-E40,ACT-E40-261105-051,"tester error E17 - probe not contacting, retest PASS pls check"
+1034,2026-11-05,N,ST3,BRG-6204,BRG-6204-261105-058,"grease amount low, dry spots on balls"
+1039,2026-11-05,M,ST2,BRG-6204,BRG-6204-261105-026,rubber seal torn after press-fit
+1044,2026-11-05,A,ST4,ACT-E40,ACT-E40-261105-054,"running torque high, stiff rotation"
+1049,2026-11-05,M,ST2,CRU-200,CRU-200-261105-005,dirt particle in raceway after washing
+1054,2026-11-05,A,ST5,BRG-6204,BRG-6204-261105-052,"part dropped by operator, scrapped"
+1002,2026-11-06,N,ST3,BRG-6204,BRG-6204-261106-033,"noisy, clicking 1x per rev, 2nd time this shift"
+1007,2026-11-06,N,ST3,BRG-6204,BRG-6204-261106-041,"noise test fail, rumble at high speed"
+1012,2026-11-06,N,ST3,BRG-6204,BRG-6204-261106-060,"noisy, clicking 1x per rev"
+1017,2026-11-06,M,ST1,BRG-6204,BRG-6204-261106-010,"OD under tolerance, 46.987 measured - retest also fail"
+1022,2026-11-06,M,ST1,BRG-6204,BRG-6204-261106-039,"OD under tolerance, 46.987 measured"
+1027,2026-11-06,M,ST4,ACT-E40,ACT-E40-261106-001,"tester error E17 - probe not contacting, retest PASS"
+1032,2026-11-06,M,ST4,ACT-E40,ACT-E40-261106-056,"tester error E17 - probe not contacting, retest PASS pls check"
+1037,2026-11-06,M,ST2,BRG-6204,BRG-6204-261106-048,"seal lip cut, visible on one side"
+1042,2026-11-06,M,ST4,ACT-E40,ACT-E40-261106-001,"running torque high, stiff rotation"
+1047,2026-11-06,A,ST2,CRU-200,CRU-200-261106-058,dirt particle in raceway after washing
+1052,2026-11-06,A,ST5,ACT-E40,ACT-E40-261106-040,"actuator motor no response, connector pin bent"
+1057,2026-11-06,A,ST2,CRU-200,CRU-200-261106-023,"seal lip cut, visible on one side"

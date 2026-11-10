@@ -1,0 +1,59 @@
+note_id,failure_mode,component,severity,test_equipment_suspected
+1001,noise_vibration,bearing,major,False
+1002,noise_vibration,bearing,major,False
+1003,noise_vibration,bearing,major,False
+1004,noise_vibration,bearing,major,False
+1005,noise_vibration,bearing,major,False
+1006,noise_vibration,bearing,major,False
+1007,noise_vibration,bearing,major,False
+1008,noise_vibration,bearing,major,False
+1009,noise_vibration,bearing,major,False
+1010,noise_vibration,bearing,major,False
+1011,noise_vibration,bearing,major,False
+1012,noise_vibration,bearing,major,False
+1013,noise_vibration,bearing,major,False
+1014,noise_vibration,bearing,major,False
+1015,noise_vibration,outer ring,major,False
+1016,noise_vibration,bearing,major,False
+1017,dimension_out_of_tolerance,outer ring,major,False
+1018,dimension_out_of_tolerance,outer ring,major,False
+1019,dimension_out_of_tolerance,inner ring,critical,False
+1020,dimension_out_of_tolerance,inner ring,critical,False
+1021,dimension_out_of_tolerance,inner ring,critical,False
+1022,dimension_out_of_tolerance,outer ring,major,False
+1023,dimension_out_of_tolerance,inner ring,critical,False
+1024,dimension_out_of_tolerance,inner ring,major,False
+1025,dimension_out_of_tolerance,outer ring,major,False
+1026,test_equipment,test probe,minor,True
+1027,test_equipment,test probe,minor,True
+1028,test_equipment,test fixture,minor,True
+1029,test_equipment,test probe,minor,True
+1030,test_equipment,test fixture,minor,True
+1031,test_equipment,test fixture,minor,True
+1032,test_equipment,test probe,minor,True
+1033,lubrication,grease,major,False
+1034,lubrication,grease,major,False
+1035,lubrication,grease,major,False
+1036,lubrication,grease,major,False
+1037,seal_damage,seal,minor,False
+1038,seal_damage,seal,minor,False
+1039,seal_damage,seal,minor,False
+1040,seal_damage,seal,minor,False
+1041,torque_out_of_spec,actuator gearbox,major,False
+1042,torque_out_of_spec,bearing,major,False
+1043,torque_out_of_spec,bearing,major,False
+1044,torque_out_of_spec,bearing,major,False
+1045,torque_out_of_spec,actuator gearbox,major,False
+1046,torque_out_of_spec,bearing,major,False
+1047,contamination,raceway,major,False
+1048,contamination,bearing,major,False
+1049,contamination,raceway,major,False
+1050,electrical_fault,motor,major,False
+1051,electrical_fault,connector,major,False
+1052,electrical_fault,connector,major,False
+1053,electrical_fault,motor,major,False
+1054,labeling_handling,handling,minor,False
+1055,labeling_handling,label,minor,False
+1056,labeling_handling,label,minor,False
+1057,seal_damage,seal,minor,False
+1058,seal_damage,seal,minor,False

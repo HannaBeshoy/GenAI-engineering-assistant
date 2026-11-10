@@ -1,0 +1,381 @@
+{
+  "device": "DX-IMU6",
+  "registers": [
+    {
+      "name": "SMPLRT_DIV",
+      "address": "0x19",
+      "access": "RW",
+      "reset": "0x00",
+      "description": "Sample rate divider: rate = 1 kHz / (1 + SMPLRT_DIV)",
+      "fields": [
+        {
+          "name": "SMPLRT_DIV",
+          "bits": "7:0",
+          "description": "Divider value"
+        }
+      ]
+    },
+    {
+      "name": "CONFIG",
+      "address": "0x1A",
+      "access": "RW",
+      "reset": "0x00",
+      "description": "Digital low-pass filter configuration",
+      "fields": [
+        {
+          "name": "EXT_SYNC",
+          "bits": "5:3",
+          "description": "External frame sync"
+        },
+        {
+          "name": "DLPF_CFG",
+          "bits": "2:0",
+          "description": "Low-pass filter bandwidth"
+        }
+      ]
+    },
+    {
+      "name": "GYRO_CONFIG",
+      "address": "0x1B",
+      "access": "RW",
+      "reset": "0x00",
+      "description": "Gyroscope configuration",
+      "fields": [
+        {
+          "name": "XG_ST",
+          "bits": "7",
+          "description": "X gyro self-test"
+        },
+        {
+          "name": "YG_ST",
+          "bits": "6",
+          "description": "Y gyro self-test"
+        },
+        {
+          "name": "ZG_ST",
+          "bits": "5",
+          "description": "Z gyro self-test"
+        },
+        {
+          "name": "FS_SEL",
+          "bits": "4:3",
+          "description": "Gyro full-scale range"
+        }
+      ]
+    },
+    {
+      "name": "ACCEL_CONFIG",
+      "address": "0x1C",
+      "access": "RW",
+      "reset": "0x00",
+      "description": "Accelerometer configuration",
+      "fields": [
+        {
+          "name": "XA_ST",
+          "bits": "7",
+          "description": "X accel self-test"
+        },
+        {
+          "name": "YA_ST",
+          "bits": "6",
+          "description": "Y accel self-test"
+        },
+        {
+          "name": "ZA_ST",
+          "bits": "5",
+          "description": "Z accel self-test"
+        },
+        {
+          "name": "AFS_SEL",
+          "bits": "4:3",
+          "description": "Accel full-scale range"
+        }
+      ]
+    },
+    {
+      "name": "INT_ENABLE",
+      "address": "0x38",
+      "access": "RW",
+      "reset": "0x00",
+      "description": "Interrupt enable",
+      "fields": [
+        {
+          "name": "FIFO_OFLOW_EN",
+          "bits": "4",
+          "description": "FIFO overflow interrupt enable"
+        },
+        {
+          "name": "DATA_RDY_EN",
+          "bits": "0",
+          "description": "Data ready interrupt enable"
+        }
+      ]
+    },
+    {
+      "name": "INT_STATUS",
+      "address": "0x3A",
+      "access": "R",
+      "reset": "0x00",
+      "description": "Interrupt status, cleared on read",
+      "fields": [
+        {
+          "name": "FIFO_OFLOW_INT",
+          "bits": "4",
+          "description": "FIFO overflow occurred"
+        },
+        {
+          "name": "DATA_RDY_INT",
+          "bits": "0",
+          "description": "New data ready"
+        }
+      ]
+    },
+    {
+      "name": "ACCEL_XOUT_H",
+      "address": "0x3B",
+      "access": "R",
+      "reset": "0x00",
+      "description": "Accelerometer X, high byte",
+      "fields": []
+    },
+    {
+      "name": "ACCEL_XOUT_L",
+      "address": "0x3C",
+      "access": "R",
+      "reset": "0x00",
+      "description": "Accelerometer X, low byte",
+      "fields": []
+    },
+    {
+      "name": "TEMP_OUT_H",
+      "address": "0x41",
+      "access": "R",
+      "reset": "0x00",
+      "description": "Temperature, high byte",
+      "fields": []
+    },
+    {
+      "name": "TEMP_OUT_L",
+      "address": "0x42",
+      "access": "R",
+      "reset": "0x00",
+      "description": "Temperature, low byte",
+      "fields": []
+    },
+    {
+      "name": "GYRO_XOUT_H",
+      "address": "0x43",
+      "access": "R",
+      "reset": "0x00",
+      "description": "Gyroscope X, high byte",
+      "fields": []
+    },
+    {
+      "name": "GYRO_XOUT_L",
+      "address": "0x44",
+      "access": "R",
+      "reset": "0x00",
+      "description": "Gyroscope X, low byte",
+      "fields": []
+    },
+    {
+      "name": "PWR_MGMT_1",
+      "address": "0x6B",
+      "access": "RW",
+      "reset": "0x40",
+      "description": "Power management 1",
+      "fields": [
+        {
+          "name": "DEVICE_RESET",
+          "bits": "7",
+          "description": "Reset all registers"
+        },
+        {
+          "name": "SLEEP",
+          "bits": "6",
+          "description": "Sleep mode"
+        },
+        {
+          "name": "CYCLE",
+          "bits": "5",
+          "description": "Cycle mode"
+        },
+        {
+          "name": "TEMP_DIS",
+          "bits": "3",
+          "description": "Disable temperature sensor"
+        },
+        {
+          "name": "CLKSEL",
+          "bits": "2:0",
+          "description": "Clock source"
+        }
+      ]
+    },
+    {
+      "name": "WHO_AM_I",
+      "address": "0x75",
+      "access": "R",
+      "reset": "0x6C",
+      "description": "Device identity, always reads 0x6C",
+      "fields": []
+    }
+  ],
+  "limits": [
+    {
+      "parameter": "Supply voltage",
+      "symbol": "VDD",
+      "min": -0.3,
+      "typ": null,
+      "max": 4.0,
+      "unit": "V",
+      "conditions": "absolute maximum"
+    },
+    {
+      "parameter": "Storage temperature",
+      "symbol": "TSTG",
+      "min": -40,
+      "typ": null,
+      "max": 125,
+      "unit": "°C",
+      "conditions": "absolute maximum"
+    },
+    {
+      "parameter": "Mechanical shock",
+      "symbol": null,
+      "min": null,
+      "typ": null,
+      "max": 10000,
+      "unit": "g",
+      "conditions": "absolute maximum, 0.2 ms"
+    },
+    {
+      "parameter": "Supply voltage",
+      "symbol": "VDD",
+      "min": 2.375,
+      "typ": 3.3,
+      "max": 3.46,
+      "unit": "V",
+      "conditions": null
+    },
+    {
+      "parameter": "I/O supply voltage",
+      "symbol": "VDDIO",
+      "min": 1.71,
+      "typ": 1.8,
+      "max": 3.46,
+      "unit": "V",
+      "conditions": "VDDIO must not exceed VDD"
+    },
+    {
+      "parameter": "Supply current, normal mode",
+      "symbol": "IDD",
+      "min": null,
+      "typ": 3.9,
+      "max": null,
+      "unit": "mA",
+      "conditions": "accel and gyro on"
+    },
+    {
+      "parameter": "Supply current, sleep",
+      "symbol": "IDD_SLP",
+      "min": null,
+      "typ": 5,
+      "max": null,
+      "unit": "µA",
+      "conditions": null
+    },
+    {
+      "parameter": "Operating temperature",
+      "symbol": "TA",
+      "min": -40,
+      "typ": null,
+      "max": 85,
+      "unit": "°C",
+      "conditions": null
+    },
+    {
+      "parameter": "I2C clock frequency",
+      "symbol": "fSCL",
+      "min": null,
+      "typ": null,
+      "max": 400,
+      "unit": "kHz",
+      "conditions": null
+    }
+  ],
+  "scales": [
+    {
+      "quantity": "acceleration",
+      "register": "ACCEL_CONFIG",
+      "field": "AFS_SEL",
+      "code": 0,
+      "range": "±2 g",
+      "sensitivity": 16384.0,
+      "unit": "LSB/g"
+    },
+    {
+      "quantity": "acceleration",
+      "register": "ACCEL_CONFIG",
+      "field": "AFS_SEL",
+      "code": 1,
+      "range": "±4 g",
+      "sensitivity": 8192.0,
+      "unit": "LSB/g"
+    },
+    {
+      "quantity": "acceleration",
+      "register": "ACCEL_CONFIG",
+      "field": "AFS_SEL",
+      "code": 2,
+      "range": "±8 g",
+      "sensitivity": 4096.0,
+      "unit": "LSB/g"
+    },
+    {
+      "quantity": "acceleration",
+      "register": "ACCEL_CONFIG",
+      "field": "AFS_SEL",
+      "code": 3,
+      "range": "±16 g",
+      "sensitivity": 2048.0,
+      "unit": "LSB/g"
+    },
+    {
+      "quantity": "angular_rate",
+      "register": "GYRO_CONFIG",
+      "field": "FS_SEL",
+      "code": 0,
+      "range": "±250 °/s",
+      "sensitivity": 131.1,
+      "unit": "LSB/(°/s)"
+    },
+    {
+      "quantity": "angular_rate",
+      "register": "GYRO_CONFIG",
+      "field": "FS_SEL",
+      "code": 1,
+      "range": "±500 °/s",
+      "sensitivity": 65.5,
+      "unit": "LSB/(°/s)"
+    },
+    {
+      "quantity": "angular_rate",
+      "register": "GYRO_CONFIG",
+      "field": "FS_SEL",
+      "code": 2,
+      "range": "±1000 °/s",
+      "sensitivity": 32.8,
+      "unit": "LSB/(°/s)"
+    },
+    {
+      "quantity": "angular_rate",
+      "register": "GYRO_CONFIG",
+      "field": "FS_SEL",
+      "code": 3,
+      "range": "±2000 °/s",
+      "sensitivity": 16.4,
+      "unit": "LSB/(°/s)"
+    }
+  ]
+}
