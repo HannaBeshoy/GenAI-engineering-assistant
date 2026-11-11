@@ -99,3 +99,29 @@ def test_real_providers_build_their_langchain_model(provider):
     chat = c._chat_model(Params(temperature=0.3, max_tokens=123, top_p=0.9))
     assert chat.temperature == 0.3
     assert getattr(chat, "max_tokens", None) == 123 or getattr(chat, "num_predict", None) == 123
+
+
+class NotFoundError(Exception):
+    """Shaped like groq.NotFoundError / openai.NotFoundError."""
+    def __init__(self, message, body):
+        super().__init__(message)
+        self.status_code, self.body = 404, body
+
+
+def test_unknown_model_shows_the_providers_own_message():
+    e = NotFoundError("Error code: 404", {"error": {"message": "The model `llama-3.1-8b-instant` does not exist",
+                                                    "code": "model_not_found"}})
+    err = classify_exception(e, "llama-3.1-8b-instant")
+    assert isinstance(err, ConfigError)
+    assert "'llama-3.1-8b-instant'" in err.user_message
+    assert "HTTP 404, model_not_found: The model `llama-3.1-8b-instant` does not exist" in err.user_message
+
+
+def test_missing_file_is_not_mistaken_for_an_unknown_model():
+    err = classify_exception(FileNotFoundError("cacert.pem"))
+    assert isinstance(err, ProviderUnavailable) and "cacert.pem" in err.user_message
+
+
+def test_groq_default_model_is_current():
+    from assistant.llm import PROVIDERS
+    assert not PROVIDERS["groq"][0].startswith("llama-3")
