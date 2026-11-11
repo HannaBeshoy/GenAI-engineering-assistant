@@ -8,6 +8,7 @@ parameters, so the app can show exactly which prompt and which settings produced
 from __future__ import annotations
 
 import json
+import logging
 import os
 import time
 from dataclasses import dataclass, field
@@ -17,9 +18,13 @@ from typing import Callable, Optional
 from .errors import (AuthError, ConfigError, DemoModeError, LLMTimeout, ProviderUnavailable,
                      RateLimitError, TruncatedOutput)
 
+log = logging.getLogger(__name__)
+
 PROVIDERS = {
     # name: (default model, environment variable for the key)
-    "groq": ("llama-3.3-70b-versatile", "GROQ_API_KEY"),
+    # Groq retired llama-3.3-70b-versatile and llama-3.1-8b-instant for free and developer
+    # accounts on 2026-08-16 (console.groq.com/docs/deprecations); gpt-oss-120b replaces them.
+    "groq": ("openai/gpt-oss-120b", "GROQ_API_KEY"),
     "openai": ("gpt-4o-mini", "OPENAI_API_KEY"),
     "ollama": ("llama3.2", None),
     "demo": ("recorded-answers", None),
@@ -97,9 +102,14 @@ class LLMClient:
         try:
             if self.provider == "groq":
                 from langchain_groq import ChatGroq
+                extra = {}
+                if "gpt-oss" in self.model:
+                    # gpt-oss thinks before answering and those tokens count against max_tokens;
+                    # low effort keeps the answers inside the sidebar's limits.
+                    extra["reasoning_effort"] = "low"
                 return ChatGroq(model=self.model, api_key=self.api_key, temperature=params.temperature,
                                 max_tokens=params.max_tokens, request_timeout=self.timeout_s, max_retries=0,
-                                model_kwargs={"top_p": params.top_p})
+                                model_kwargs={"top_p": params.top_p}, **extra)
             if self.provider == "openai":
                 from langchain_openai import ChatOpenAI
                 return ChatOpenAI(model=self.model, api_key=self.api_key, temperature=params.temperature,
@@ -122,7 +132,8 @@ class LLMClient:
             try:
                 msg = chat.invoke([SystemMessage(content=system), HumanMessage(content=user)])
             except Exception as e:                           # noqa: BLE001 - mapped below
-                err = classify_exception(e)
+                log.warning("%s call failed (model %s, attempt %d): %r", self.provider, self.model, attempt, e)
+                err = classify_exception(e, self.model)
                 retryable = isinstance(err, (RateLimitError, LLMTimeout, ProviderUnavailable))
                 if not retryable or attempt == self.max_attempts:
                     raise err from e
@@ -160,24 +171,49 @@ def _text(msg) -> str:
     return str(content)
 
 
-def classify_exception(e: Exception):
+def provider_detail(e: Exception) -> str:
+    """The provider's own words: HTTP status, error code and message, for the user to see."""
+    status = getattr(e, "status_code", None)
+    body = getattr(e, "body", None)
+    if isinstance(body, dict):
+        body = body.get("error", body)
+    message = code = None
+    if isinstance(body, dict):
+        message, code = body.get("message"), body.get("code")
+    message = message or str(e) or type(e).__name__
+    parts = [f"HTTP {status}" if status else type(e).__name__]
+    if code:
+        parts.append(str(code))
+    return f"{', '.join(parts)}: {str(message)[:300]}"
+
+
+def classify_exception(e: Exception, model: str = ""):
     """Map SDK exceptions (openai, groq, httpx, ollama) to the app's errors by name,
-    so the app does not need to import every SDK."""
-    names = " ".join(c.__name__ for c in type(e).__mro__)
+    so the app does not need to import every SDK. Every message ends with what the
+    provider itself said, so a wrong mapping is still diagnosable."""
+    names = {c.__name__ for c in type(e).__mro__}
     text = str(e)
-    if "Authentication" in names or "PermissionDenied" in names or "401" in text:
-        return AuthError("The provider rejected the API key.")
-    if "RateLimit" in names or "429" in text:
-        return RateLimitError("The provider's rate limit was reached.")
-    if "Timeout" in names:
-        return LLMTimeout("The request timed out.")
-    if "Connect" in names or "ConnectionError" in names:
-        return ProviderUnavailable("Could not connect to the provider.")
-    if "NotFound" in names or "model_not_found" in text:
-        return ConfigError("The provider does not know this model name.")
-    if "BadRequest" in names and ("context" in text.lower() or "too long" in text.lower()):
-        return ConfigError("The input is too long for this model's context window.")
-    return ProviderUnavailable(f"The provider returned an error: {type(e).__name__}: {text[:200]}")
+    status = getattr(e, "status_code", None)
+    said = f" Provider said: {provider_detail(e)}"
+    the_model = f" '{model}'" if model else ""
+    if "AuthenticationError" in names or "PermissionDeniedError" in names or status in (401, 403) or "401" in text:
+        return AuthError("The provider rejected the API key." + said)
+    if "RateLimitError" in names or status == 429 or "429" in text:
+        return RateLimitError("The provider's rate limit was reached." + said)
+    if any("Timeout" in n for n in names):
+        return LLMTimeout("The request timed out." + said)
+    if any("Connect" in n for n in names):
+        return ProviderUnavailable("Could not connect to the provider." + said)
+    if "model_decommissioned" in text or "decommissioned" in text:
+        return ConfigError(f"The model{the_model} has been retired by the provider." + said,
+                           hint="Pick a current model (for Groq: openai/gpt-oss-120b or openai/gpt-oss-20b).")
+    if "NotFoundError" in names or status == 404 or "model_not_found" in text:
+        return ConfigError(f"The provider does not know the model{the_model}, or this key has no access to it." + said,
+                           hint="Check the model name in the sidebar against the provider's current model list "
+                                "(for Groq: console.groq.com/docs/models; openai/gpt-oss-120b works on the free tier).")
+    if "BadRequestError" in names and ("context" in text.lower() or "too long" in text.lower()):
+        return ConfigError("The input is too long for this model's context window." + said)
+    return ProviderUnavailable(f"The provider returned an error.{said}")
 
 
 def load_demo_answers(path: Path) -> dict:
