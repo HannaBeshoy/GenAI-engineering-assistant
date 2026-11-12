@@ -33,6 +33,8 @@ How the application works, what to show at the project defence, and how to exten
 
 The experiment (`experiments/param_tuning.py`) shows the effect: with higher temperature the valid-JSON rate and the agreement between runs fall, and too-small max_tokens cuts the JSON off, which the app reports as `TruncatedOutput` instead of crashing.
 
+Measured with Groq (openai/gpt-oss-120b, 3 runs per temperature, `experiments/results/param_tuning.md`): temperature 0.0 to 0.4 gave valid, correct register maps in 3 of 3 runs; above 0.4 extraction became unreliable (0.8: 1 of 3 valid, 1.2: 2 of 3; the order of these two is chance with 3 runs). Labels stayed 100 % correct at every temperature. max_tokens 2048 completed; 512 and 128 ended in `TruncatedOutput`. This supports temperature 0 for extraction.
+
 ## 4. Error handling, end to end
 
 | What goes wrong | What the user sees |
