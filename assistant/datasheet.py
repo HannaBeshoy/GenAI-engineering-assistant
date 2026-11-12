@@ -31,7 +31,7 @@ CHUNK_CHARS = 12000          # about 3000 tokens of datasheet text per extractio
 @dataclass
 class DatasheetSettings:
     extract: Params = field(default_factory=lambda: Params(temperature=0.0, max_tokens=4096))
-    write: Params = field(default_factory=lambda: Params(temperature=0.7, max_tokens=1200))
+    write: Params = field(default_factory=lambda: Params(temperature=0.7, max_tokens=2048))
     answer: Params = field(default_factory=lambda: Params(temperature=0.2, max_tokens=600))
     review_rounds: int = 1
 
