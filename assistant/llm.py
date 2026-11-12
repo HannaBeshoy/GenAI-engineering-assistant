@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -67,7 +68,10 @@ class LLMClient:
     api_key: str = ""
     timeout_s: float = 60.0
     max_attempts: int = 4            # 1 call + 3 retries on rate limits / transient errors
-    backoff_s: float = 2.0           # 2 s, 4 s, 8 s
+    backoff_s: float = 2.0           # timeouts, connection errors: 2 s, 4 s, 8 s
+    rate_limit_backoff_s: float = 10.0   # rate limit without a wait from the provider: 10 s, 20 s, 40 s
+    max_wait_s: float = 90.0         # a longer wait asked by the provider (e.g. a daily limit) is not waited out
+    on_wait: Optional[Callable[[float, str], None]] = None   # the app shows "waiting N s" here
     demo_answers: Optional[dict] = None
     log: list = field(default_factory=list)
     _sleep: Callable[[float], None] = time.sleep
@@ -137,13 +141,28 @@ class LLMClient:
                 retryable = isinstance(err, (RateLimitError, LLMTimeout, ProviderUnavailable))
                 if not retryable or attempt == self.max_attempts:
                     raise err from e
+                wait = self.backoff_s * 2 ** (attempt - 1)
+                if isinstance(err, RateLimitError):
+                    asked = retry_after_seconds(e)
+                    if asked is not None and asked > self.max_wait_s:
+                        err.hint = (f"The provider asks to wait {_fmt_s(asked)} before the next request, so this "
+                                    "is probably a daily limit. Try again later, or use another model or key.")
+                        raise err from e
+                    # The provider says when the tokens are free again; wait that long plus a margin.
+                    wait = asked + 1.0 if asked is not None else self.rate_limit_backoff_s * 2 ** (attempt - 1)
+                if self.on_wait:
+                    self.on_wait(wait, type(err).__name__)
                 last = err
-                self._sleep(self.backoff_s * 2 ** (attempt - 1))
+                self._sleep(wait)
                 continue
             meta = getattr(msg, "response_metadata", {}) or {}
             reason = meta.get("finish_reason") or meta.get("done_reason") or ""
             if reason == "length":
-                raise TruncatedOutput(f"The model stopped at max_tokens={params.max_tokens} before finishing.")
+                thinking = reasoning_tokens(msg)
+                raise TruncatedOutput(
+                    f"The model stopped at max_tokens={params.max_tokens} before finishing"
+                    + (f"; {thinking} of those tokens went to its hidden reasoning before the answer." if thinking
+                       else "."))
             return _text(msg), attempt
         raise last  # pragma: no cover - loop always returns or raises
 
@@ -162,6 +181,16 @@ class LLMClient:
         i = self._demo_counters.get(task, 0)
         self._demo_counters[task] = i + 1
         return answers[min(i, len(answers) - 1)]
+
+
+def reasoning_tokens(msg) -> int:
+    """Tokens a reasoning model (gpt-oss, o-series) spent thinking, if the provider reports them."""
+    usage = getattr(msg, "usage_metadata", None) or {}
+    n = (usage.get("output_token_details") or {}).get("reasoning")
+    if not n:
+        meta = (getattr(msg, "response_metadata", {}) or {}).get("token_usage") or {}
+        n = (meta.get("completion_tokens_details") or {}).get("reasoning_tokens")
+    return int(n or 0)
 
 
 def _text(msg) -> str:
@@ -187,6 +216,41 @@ def provider_detail(e: Exception) -> str:
     return f"{', '.join(parts)}: {str(message)[:300]}"
 
 
+_DURATION = re.compile(r"(?:(\d+(?:\.\d+)?)h)?(?:(\d+(?:\.\d+)?)m(?!s))?(?:(\d+(?:\.\d+)?)s)?(?:(\d+(?:\.\d+)?)ms)?$")
+_TRY_AGAIN = re.compile(r"try again in\s+([\d.hms]+)", re.IGNORECASE)
+
+
+def parse_duration(text) -> Optional[float]:
+    """Seconds from '2', '7.66s', '1m2.5s', '450ms' or '1h3m' (the formats Groq and OpenAI use)."""
+    text = str(text).strip().lower()
+    try:
+        return float(text)
+    except ValueError:
+        pass
+    m = _DURATION.match(text)
+    if not text or not m or not any(m.groups()):
+        return None
+    h, mi, s, ms = (float(g) if g else 0.0 for g in m.groups())
+    return h * 3600 + mi * 60 + s + ms / 1000
+
+
+def retry_after_seconds(e: Exception) -> Optional[float]:
+    """How long the provider asks us to wait after a 429: the retry-after header, the
+    tokens-per-minute reset header, or the 'Please try again in 7.5s' part of the message."""
+    headers = getattr(getattr(e, "response", None), "headers", None) or {}
+    for name in ("retry-after", "x-ratelimit-reset-tokens"):
+        value = headers.get(name) if hasattr(headers, "get") else None
+        seconds = parse_duration(value) if value is not None else None
+        if seconds is not None:
+            return seconds
+    m = _TRY_AGAIN.search(provider_detail(e) + " " + str(e))
+    return parse_duration(m.group(1).rstrip(".")) if m else None
+
+
+def _fmt_s(seconds: float) -> str:
+    return f"{seconds / 60:.0f} min" if seconds >= 120 else f"{seconds:.0f} s"
+
+
 def classify_exception(e: Exception, model: str = ""):
     """Map SDK exceptions (openai, groq, httpx, ollama) to the app's errors by name,
     so the app does not need to import every SDK. Every message ends with what the
@@ -198,6 +262,10 @@ def classify_exception(e: Exception, model: str = ""):
     the_model = f" '{model}'" if model else ""
     if "AuthenticationError" in names or "PermissionDeniedError" in names or status in (401, 403) or "401" in text:
         return AuthError("The provider rejected the API key." + said)
+    if status == 413 or "request too large" in text.lower():
+        return ConfigError("This one request (the prompt plus max_tokens) is larger than the provider allows "
+                           "per request or per minute." + said,
+                           hint="Lower max_tokens in the sidebar: the provider counts it as part of the request.")
     if "RateLimitError" in names or status == 429 or "429" in text:
         return RateLimitError("The provider's rate limit was reached." + said)
     if any("Timeout" in n for n in names):

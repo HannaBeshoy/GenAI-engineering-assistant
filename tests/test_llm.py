@@ -2,7 +2,7 @@ import pytest
 
 from assistant.errors import (AuthError, ConfigError, LLMTimeout, ProviderUnavailable, RateLimitError,
                               TruncatedOutput)
-from assistant.llm import LLMClient, Params, classify_exception
+from assistant.llm import LLMClient, Params, classify_exception, parse_duration
 
 
 class AuthenticationError(Exception): ...
@@ -60,9 +60,69 @@ def test_exception_mapping(exc, cls):
 
 
 def test_rate_limit_is_retried_with_backoff():
+    """Without a wait from the provider, rate limits back off 10, 20, 40 s (a token-per-minute window)."""
     c, chat, sleeps = client([RateLimitErrorSDK("429"), RateLimitErrorSDK("429"), Msg("ok")])
     assert c.complete("t", "zero-shot", "s", "u", Params()) == "ok"
-    assert sleeps == [2.0, 4.0] and chat.calls == 3 and c.log[0].attempts == 3
+    assert sleeps == [10.0, 20.0] and chat.calls == 3 and c.log[0].attempts == 3
+
+
+def test_timeouts_keep_the_short_backoff():
+    c, chat, sleeps = client([APITimeoutError("t"), APITimeoutError("t"), Msg("ok")])
+    assert c.complete("t", "x", "s", "u", Params()) == "ok"
+    assert sleeps == [2.0, 4.0]
+
+
+class Response:
+    def __init__(self, headers):
+        self.headers = headers
+
+
+class GroqRateLimit(Exception):
+    """Shaped like groq.RateLimitError: status 429, the HTTP response and the JSON body."""
+    def __init__(self, message, headers=None):
+        super().__init__(f"Error code: 429 - {message}")
+        self.status_code, self.response = 429, Response(headers or {})
+        self.body = {"error": {"message": message, "type": "tokens", "code": "rate_limit_exceeded"}}
+
+
+TPM_MESSAGE = ("Rate limit reached for model `openai/gpt-oss-120b` on tokens per minute (TPM): "
+               "Limit 8000, Used 6900, Requested 2900. Please try again in 13.5s.")
+
+
+@pytest.mark.parametrize("text,seconds", [("2", 2.0), ("7.66s", 7.66), ("1m2.5s", 62.5), ("450ms", 0.45),
+                                          ("2m59.56s", 179.56), ("1h3m", 3780.0), ("soon", None), ("", None)])
+def test_provider_durations_are_parsed(text, seconds):
+    assert parse_duration(text) == (pytest.approx(seconds) if seconds is not None else None)
+
+
+def test_rate_limit_waits_as_long_as_the_provider_asks():
+    waits = []
+    c, chat, sleeps = client([GroqRateLimit(TPM_MESSAGE), GroqRateLimit("slow down", {"retry-after": "7"}), Msg("ok")],
+                             on_wait=lambda s, why: waits.append((s, why)))
+    assert c.complete("t", "persona", "s", "u", Params()) == "ok"
+    assert sleeps == [pytest.approx(14.5), pytest.approx(8.0)]      # the provider's wait + 1 s margin
+    assert waits[0] == (pytest.approx(14.5), "RateLimitError")
+
+
+def test_a_long_provider_wait_is_not_waited_out():
+    e = GroqRateLimit("Rate limit reached for model `openai/gpt-oss-120b` on tokens per day (TPD): "
+                      "Limit 200000, Used 199000, Requested 3000. Please try again in 12m30s.")
+    c, chat, sleeps = client([e, Msg("never")])
+    with pytest.raises(RateLimitError) as info:
+        c.complete("t", "x", "s", "u", Params())
+    assert chat.calls == 1 and sleeps == []
+    assert "12 min" in info.value.user_message and "tokens per day (TPD)" in info.value.user_message
+
+
+def test_request_larger_than_the_limit_asks_for_a_smaller_max_tokens():
+    class APIStatusError(Exception):
+        status_code = 413
+        body = {"error": {"message": "Request too large for model `openai/gpt-oss-120b` on tokens per minute (TPM): "
+                                     "Limit 8000, Requested 9800, please reduce your message size and try again."}}
+    c, chat, _ = client([APIStatusError("Error code: 413")])
+    with pytest.raises(ConfigError) as info:
+        c.complete("t", "x", "s", "u", Params())
+    assert chat.calls == 1 and "max_tokens" in info.value.user_message and "Requested 9800" in info.value.user_message
 
 
 def test_rate_limit_gives_up():
@@ -83,6 +143,16 @@ def test_truncated_answer_is_reported():
     c, _, _ = client([Msg('{"a": ', reason="length")])
     with pytest.raises(TruncatedOutput):
         c.complete("t", "x", "s", "u", Params(max_tokens=32))
+
+
+def test_truncation_says_how_many_tokens_went_to_reasoning():
+    msg = Msg("## Overview\nThe DX-IMU6 is", reason="length")
+    msg.response_metadata["token_usage"] = {"completion_tokens": 1024,
+                                            "completion_tokens_details": {"reasoning_tokens": 870}}
+    c, _, _ = client([msg])
+    with pytest.raises(TruncatedOutput) as info:
+        c.complete("engineering_brief", "persona", "s", "u", Params(max_tokens=1024))
+    assert "870 of those tokens went to its hidden reasoning" in info.value.user_message
 
 
 def test_log_records_technique_and_parameters():

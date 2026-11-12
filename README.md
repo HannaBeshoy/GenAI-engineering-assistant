@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/HannaBeshoy/genai-engineering-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/HannaBeshoy/genai-engineering-assistant/actions/workflows/ci.yml)
 
-**Introduction to Generative AI course project (INBPA9962L)** · University of Debrecen, Faculty of Informatics · Python, LangChain, Streamlit, Groq / OpenAI / Ollama · **individual project, 49 tests in CI, demo mode runs without an API key**
+**Introduction to Generative AI course project (INBPA9962L)** · University of Debrecen, Faculty of Informatics · Python, LangChain, Streamlit, Groq / OpenAI / Ollama · **individual project, 62 tests in CI, demo mode runs without an API key**
 
 A Streamlit application with two generative-AI tools for jobs that engineers really do:
 
@@ -24,7 +24,7 @@ Both are pipelines of several model calls joined by ordinary code (validation, c
 | Solves a real-world problem, substantive processing | datasheet → validated JSON → C header; notes → labels → k-means groups → Pareto → root causes → report |
 | Parameter tuning | temperature, top_p and max_tokens in the sidebar, chosen per step (0 for extraction, 0.7 for writing); `experiments/param_tuning.py` measures their effect |
 | Prompt techniques (2 required) | **six**: zero-shot, few-shot, chain-of-thought, persona, retrieval-grounded answering, self-correction with validator feedback ([table](#prompt-techniques)) |
-| Error handling | `assistant/errors.py`: bad or scanned PDFs, bad CSVs, missing or wrong API keys, rate limits (retry with exponential back-off), timeouts, provider offline, answers cut off by max_tokens, invalid JSON (repaired by the model, up to 2 times) |
+| Error handling | `assistant/errors.py`: bad or scanned PDFs, bad CSVs, missing or wrong API keys, rate limits (retry after the wait the provider asks for, or exponential back-off; a request larger than the per-minute limit asks for a smaller max_tokens), timeouts, provider offline, answers cut off by max_tokens, invalid JSON (repaired by the model, up to 2 times) |
 | Documentation and GitHub | this repository, [docs/PROJECT_GUIDE.md](docs/PROJECT_GUIDE.md) |
 
 ## The two pipelines
@@ -91,6 +91,8 @@ Choose a provider in the sidebar:
 | --- | --- | --- |
 | demo | none | replays recorded answers; only the sample files work |
 | groq | `GROQ_API_KEY` (free at console.groq.com, no card) | default model `openai/gpt-oss-120b` (Groq retired the Llama 3.x models for free accounts in August 2026; `openai/gpt-oss-20b` is the faster option) |
+
+On Groq's free tier (8,000 tokens per minute for the gpt-oss models) one datasheet run needs more than a minute's worth of tokens, because the requested max_tokens counts toward the limit. The app then waits as long as Groq asks (a "waiting N s" notice appears) and carries on, so a real run takes about 2 to 4 minutes. Lowering max_tokens for extraction to 2048 makes it faster. Keep max_tokens for writing at 2048: gpt-oss thinks before it writes and those reasoning tokens count toward max_tokens, so 1024 can cut the brief off.
 | openai | `OPENAI_API_KEY` | default model `gpt-4o-mini` |
 | ollama | none | local and offline: `ollama pull llama3.2`, then `ollama serve` |
 
@@ -100,7 +102,7 @@ Tests (no key or network needed):
 
 ```bash
 pip install -r requirements-dev.txt
-python -m pytest -q            # 49 tests: parsing, repair loop, retries, error mapping, PDF, checks, both pipelines, the app
+python -m pytest -q            # 62 tests: parsing, repair loop, retries, error mapping, PDF, checks, both pipelines, the app
 ruff check .
 ```
 
@@ -118,7 +120,7 @@ assistant/
 samples/                  fictional datasheet, synthetic notes, correct answers, recorded demo answers
 tools/make_samples.py     rebuilds everything in samples/
 experiments/param_tuning.py
-tests/                    49 pytest tests, including a click-through of the app (Streamlit AppTest)
+tests/                    62 pytest tests, including a click-through of the app (Streamlit AppTest)
 docs/PROJECT_GUIDE.md     design, defence notes, how to extend
 ```
 

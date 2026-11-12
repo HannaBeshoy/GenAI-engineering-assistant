@@ -28,7 +28,7 @@ How the application works, what to show at the project defence, and how to exten
 | extraction, labelling | 0.0 | 4096 | the same input must give the same data; long JSON |
 | cluster naming | 0.3 | 800 | a little variety in names is fine |
 | root cause | 0.2 | 1500 | reasoning text plus JSON |
-| brief, shift report | 0.7 | 1200 | readable, less repetitive prose |
+| brief, shift report | 0.7 | 2048 | readable, less repetitive prose; room for a reasoning model's thinking tokens |
 | repair calls | 0.0 | same as the step | corrections must be exact |
 
 The experiment (`experiments/param_tuning.py`) shows the effect: with higher temperature the valid-JSON rate and the agreement between runs fall, and too-small max_tokens cuts the JSON off, which the app reports as `TruncatedOutput` instead of crashing.
@@ -38,7 +38,8 @@ The experiment (`experiments/param_tuning.py`) shows the effect: with higher tem
 | What goes wrong | What the user sees |
 | --- | --- |
 | no key / wrong key | "No API key for groq ..." / "The API key was rejected ..." |
-| rate limit (429) | retried after 2, 4, 8 s; then "rate limit was hit even after waiting and retrying" |
+| rate limit (429) | waits as long as the provider asks (retry-after header or "try again in 13.5s"), otherwise 10, 20, 40 s, with a "waiting N s" notice; a wait longer than 90 s (a daily limit) is reported at once; then "rate limit was hit even after waiting and retrying" |
+| one request larger than the limit (413) | "larger than the provider allows ... Lower max_tokens in the sidebar" |
 | timeout, provider offline | retried; then a clear message (for Ollama: "is `ollama serve` running?") |
 | answer cut off | "The answer was cut off by max_tokens. Raise max_tokens in the sidebar." |
 | invalid JSON or wrong fields | repaired by the model (up to 2 times), then "returned invalid data after 2 repair attempts" |

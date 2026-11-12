@@ -44,7 +44,8 @@ with st.sidebar:
                         help="Higher = more varied wording.")
     top_p = st.slider("top_p", 0.1, 1.0, 1.0, 0.05)
     mt_extract = st.number_input("max_tokens for extraction", 256, 16000, 4096, 256)
-    mt_write = st.number_input("max_tokens for writing", 128, 8000, 1200, 64)
+    mt_write = st.number_input("max_tokens for writing", 128, 8000, 2048, 64,
+                               help="Reasoning models (gpt-oss) also spend these tokens on thinking before they write.")
     if provider == "demo":
         st.info("Demo mode: no API key needed, but only the sample files work.")
 
@@ -55,7 +56,10 @@ def make_client(demo_file: str | None, data: bytes, sample: Path) -> LLMClient:
         if sha(data) != sha(sample.read_bytes()):
             raise DemoModeError("This is not the sample file.")
         answers = load_demo_answers(SAMPLES / demo_file)
-    client = LLMClient(provider=provider, model=model, api_key=api_key, demo_answers=answers)
+    client = LLMClient(provider=provider, model=model, api_key=api_key, demo_answers=answers,
+                       on_wait=lambda seconds, why: st.toast(
+                           f"{'Rate limit reached' if why == 'RateLimitError' else 'Provider not answering'}: "
+                           f"waiting {seconds:.0f} s, then trying again.", icon="⏳"))
     st.session_state.setdefault("log", [])
     client.log = st.session_state["log"]
     return client
