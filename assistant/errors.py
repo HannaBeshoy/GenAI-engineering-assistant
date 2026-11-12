@@ -25,7 +25,9 @@ class AuthError(AssistantError):
 
 
 class RateLimitError(AssistantError):
-    hint = "The provider's rate limit was hit even after waiting and retrying. Wait a minute or use a smaller model."
+    hint = ("The provider's rate limit was hit even after waiting and retrying. Wait a minute and try again, or "
+            "lower max_tokens in the sidebar (free tiers such as Groq's count max_tokens toward the tokens-per-minute "
+            "limit).")
 
 
 class LLMTimeout(AssistantError):

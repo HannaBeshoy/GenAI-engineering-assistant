@@ -38,7 +38,8 @@ The experiment (`experiments/param_tuning.py`) shows the effect: with higher tem
 | What goes wrong | What the user sees |
 | --- | --- |
 | no key / wrong key | "No API key for groq ..." / "The API key was rejected ..." |
-| rate limit (429) | retried after 2, 4, 8 s; then "rate limit was hit even after waiting and retrying" |
+| rate limit (429) | waits as long as the provider asks (retry-after header or "try again in 13.5s"), otherwise 10, 20, 40 s, with a "waiting N s" notice; a wait longer than 90 s (a daily limit) is reported at once; then "rate limit was hit even after waiting and retrying" |
+| one request larger than the limit (413) | "larger than the provider allows ... Lower max_tokens in the sidebar" |
 | timeout, provider offline | retried; then a clear message (for Ollama: "is `ollama serve` running?") |
 | answer cut off | "The answer was cut off by max_tokens. Raise max_tokens in the sidebar." |
 | invalid JSON or wrong fields | repaired by the model (up to 2 times), then "returned invalid data after 2 repair attempts" |

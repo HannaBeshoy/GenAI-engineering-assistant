@@ -55,7 +55,10 @@ def make_client(demo_file: str | None, data: bytes, sample: Path) -> LLMClient:
         if sha(data) != sha(sample.read_bytes()):
             raise DemoModeError("This is not the sample file.")
         answers = load_demo_answers(SAMPLES / demo_file)
-    client = LLMClient(provider=provider, model=model, api_key=api_key, demo_answers=answers)
+    client = LLMClient(provider=provider, model=model, api_key=api_key, demo_answers=answers,
+                       on_wait=lambda seconds, why: st.toast(
+                           f"{'Rate limit reached' if why == 'RateLimitError' else 'Provider not answering'}: "
+                           f"waiting {seconds:.0f} s, then trying again.", icon="⏳"))
     st.session_state.setdefault("log", [])
     client.log = st.session_state["log"]
     return client
