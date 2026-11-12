@@ -158,7 +158,11 @@ class LLMClient:
             meta = getattr(msg, "response_metadata", {}) or {}
             reason = meta.get("finish_reason") or meta.get("done_reason") or ""
             if reason == "length":
-                raise TruncatedOutput(f"The model stopped at max_tokens={params.max_tokens} before finishing.")
+                thinking = reasoning_tokens(msg)
+                raise TruncatedOutput(
+                    f"The model stopped at max_tokens={params.max_tokens} before finishing"
+                    + (f"; {thinking} of those tokens went to its hidden reasoning before the answer." if thinking
+                       else "."))
             return _text(msg), attempt
         raise last  # pragma: no cover - loop always returns or raises
 
@@ -177,6 +181,16 @@ class LLMClient:
         i = self._demo_counters.get(task, 0)
         self._demo_counters[task] = i + 1
         return answers[min(i, len(answers) - 1)]
+
+
+def reasoning_tokens(msg) -> int:
+    """Tokens a reasoning model (gpt-oss, o-series) spent thinking, if the provider reports them."""
+    usage = getattr(msg, "usage_metadata", None) or {}
+    n = (usage.get("output_token_details") or {}).get("reasoning")
+    if not n:
+        meta = (getattr(msg, "response_metadata", {}) or {}).get("token_usage") or {}
+        n = (meta.get("completion_tokens_details") or {}).get("reasoning_tokens")
+    return int(n or 0)
 
 
 def _text(msg) -> str:

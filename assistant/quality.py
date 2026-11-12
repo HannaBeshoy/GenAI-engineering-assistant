@@ -37,7 +37,7 @@ class QualitySettings:
     label: Params = field(default_factory=lambda: Params(temperature=0.0, max_tokens=2048))
     name: Params = field(default_factory=lambda: Params(temperature=0.3, max_tokens=800))
     reason: Params = field(default_factory=lambda: Params(temperature=0.2, max_tokens=1500))
-    write: Params = field(default_factory=lambda: Params(temperature=0.7, max_tokens=900))
+    write: Params = field(default_factory=lambda: Params(temperature=0.7, max_tokens=2048))
     top_modes: int = 3
 
 

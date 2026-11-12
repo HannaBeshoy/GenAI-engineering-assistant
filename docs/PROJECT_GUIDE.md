@@ -28,7 +28,7 @@ How the application works, what to show at the project defence, and how to exten
 | extraction, labelling | 0.0 | 4096 | the same input must give the same data; long JSON |
 | cluster naming | 0.3 | 800 | a little variety in names is fine |
 | root cause | 0.2 | 1500 | reasoning text plus JSON |
-| brief, shift report | 0.7 | 1200 | readable, less repetitive prose |
+| brief, shift report | 0.7 | 2048 | readable, less repetitive prose; room for a reasoning model's thinking tokens |
 | repair calls | 0.0 | same as the step | corrections must be exact |
 
 The experiment (`experiments/param_tuning.py`) shows the effect: with higher temperature the valid-JSON rate and the agreement between runs fall, and too-small max_tokens cuts the JSON off, which the app reports as `TruncatedOutput` instead of crashing.
