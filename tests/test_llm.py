@@ -145,6 +145,16 @@ def test_truncated_answer_is_reported():
         c.complete("t", "x", "s", "u", Params(max_tokens=32))
 
 
+def test_truncation_says_how_many_tokens_went_to_reasoning():
+    msg = Msg("## Overview\nThe DX-IMU6 is", reason="length")
+    msg.response_metadata["token_usage"] = {"completion_tokens": 1024,
+                                            "completion_tokens_details": {"reasoning_tokens": 870}}
+    c, _, _ = client([msg])
+    with pytest.raises(TruncatedOutput) as info:
+        c.complete("engineering_brief", "persona", "s", "u", Params(max_tokens=1024))
+    assert "870 of those tokens went to its hidden reasoning" in info.value.user_message
+
+
 def test_log_records_technique_and_parameters():
     c, _, _ = client([Msg("hi")])
     c.complete("brief", "persona", "sys", "usr", Params(temperature=0.7, max_tokens=500))

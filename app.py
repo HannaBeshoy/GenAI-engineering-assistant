@@ -44,7 +44,8 @@ with st.sidebar:
                         help="Higher = more varied wording.")
     top_p = st.slider("top_p", 0.1, 1.0, 1.0, 0.05)
     mt_extract = st.number_input("max_tokens for extraction", 256, 16000, 4096, 256)
-    mt_write = st.number_input("max_tokens for writing", 128, 8000, 1200, 64)
+    mt_write = st.number_input("max_tokens for writing", 128, 8000, 2048, 64,
+                               help="Reasoning models (gpt-oss) also spend these tokens on thinking before they write.")
     if provider == "demo":
         st.info("Demo mode: no API key needed, but only the sample files work.")
 
