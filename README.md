@@ -76,6 +76,8 @@ The samples are made by `tools/make_samples.py`: a datasheet for a **fictional**
 
 With a real model, run `python experiments/param_tuning.py --provider groq` to measure accuracy and repeatability for temperatures 0 to 1.2 and to see the truncation handling; it writes `experiments/results/param_tuning.md`.
 
+Recorded result (Groq, openai/gpt-oss-120b, 3 runs per temperature, [experiments/results/param_tuning.md](experiments/results/param_tuning.md)): at temperature 0.0 and 0.4 the register map was valid JSON and fully correct in 3 of 3 runs; at 0.8 and 1.2 it failed in some runs (1 of 3 and 2 of 3 valid; with only 3 runs, 0.8 scoring below 1.2 is chance). Note labelling stayed at 100 % at every temperature. max_tokens 2048 gave a complete answer, while 512 and 128 were reported as `TruncatedOutput`.
+
 ## Running it
 
 ```bash
@@ -119,7 +121,7 @@ assistant/
   pdf.py  checks.py  cheader.py  retrieval.py  errors.py
 samples/                  fictional datasheet, synthetic notes, correct answers, recorded demo answers
 tools/make_samples.py     rebuilds everything in samples/
-experiments/param_tuning.py
+experiments/param_tuning.py   temperature and max_tokens experiment; results/param_tuning.md holds the Groq run
 tests/                    62 pytest tests, including a click-through of the app (Streamlit AppTest)
 docs/PROJECT_GUIDE.md     design, defence notes, how to extend
 ```
